@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <GVL Name="GVL" Id="{859999e1-83a6-4ffa-83f3-9a067c2cf848}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	
+	//Taster
+	bStart: BOOL;
+	bQuitieren: BOOL;
+	bStop: BOOL;
+	
+	//Sensoren
+	//Sotieranlage hat zwei linien 1 Zuliferung der Teile 2 Abtransport
+	bB1_1 : BOOL; //Sensor Vorne
+	bB1_2 :BOOL;  //Sensor Mitte
+	bB1_3:BOOL; //Sensor Ende
+	
+	bB2_1 : BOOL; //Sensor Vorne
+	bB2_2 :BOOL;  //Sensor Mitte
+	bB2_3:BOOL; //Sensor Ende
+	
+	//Aktoren
+	//Sotieranlage hat zwei linien 1 Zuliferung der Teile 2 Abtransport
+	bM1_1 :BOOL; //Rollenstopper Vorne
+	bM1_2 :BOOL; //Rollenstopper Mitte
+	bM1_3 :BOOL; //Rollenstopper Hinten
+	
+	bM2_1 :BOOL; //Rollenstopper Vorne
+	bM2_2 :BOOL; //Rollenstopper Mitte
+	bM2_3 :BOOL; //Rollenstopper Hinten
+	
+	//Ampeln
+	//Sotieranlage hat zwei linien 1 Zuliferung der Teile 2 Abtransport
+	P1_1R:BOOL; //Ampel Rot
+	P1_1Y:BOOL; //Ampel Gelb
+	P1_1G:BOOL; //Ampel Gruen
+	
+	P1_3R:BOOL; //Ampel Rot
+	P1_3Y:BOOL; //Ampel Gelb
+	P1_3G:BOOL; //Ampel Gruen
+	
+	P2_1R:BOOL; //Ampel Rot
+	P2_1Y:BOOL; //Ampel Gelb
+	P2_1G:BOOL; //Ampel Gruen
+	
+	P2_3R:BOOL; //Ampel Rot
+	P2_3Y:BOOL; //Ampel Gelb
+	P2_3G:BOOL; //Ampel Gruen	
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>
