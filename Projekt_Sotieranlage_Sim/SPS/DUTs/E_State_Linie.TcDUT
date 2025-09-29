@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <DUT Name="E_State_Linie" Id="{724e4e42-654d-4ae0-b96c-c93d1084c7e9}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_State_Linie :
+(
+	IDLE,
+	INIT,
+	START,
+	OPEN_MIDLE,
+	CLOSE_MIDLE,
+	OPEN_START,
+	CLOSE_START,
+	WAIT_MIDLE,
+	WAIT_START,
+	DONE
+	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

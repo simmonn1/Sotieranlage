@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="Ampel" Id="{42e454cd-d42b-4e7f-84ee-334959e9c826}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Ampel
+VAR_INPUT
+	e_state_ample : E_STATE_AMPEL;
+END_VAR
+VAR_OUTPUT
+	red:BOOL;
+	yellow:BOOL;
+	green:BOOL;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE e_state_ample OF
+	
+	E_STATE_AMPEL.OFF:
+		red:=FALSE;
+		green:=FALSE;
+		yellow:=FALSE;
+		
+	E_STATE_AMPEL.ALL:
+		red:=TRUE;
+		green:=TRUE;
+		yellow:=TRUE;
+	
+	E_STATE_AMPEL.RED:
+		red:=TRUE;
+		green:=FALSE;
+		yellow:=FALSE;
+		
+	E_STATE_AMPEL.YELLOW:
+		red:=FALSE;
+		green:=FALSE;
+		yellow:=TRUE;
+		
+	E_STATE_AMPEL.GREEN:
+		red:=FALSE;
+		green:=TRUE;
+		yellow:=FALSE;
+			
+		
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="Ampel">
+      <LineId Id="9" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="30" Count="2" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="2" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="41" Count="2" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

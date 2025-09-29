@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="Transport" Id="{c23b7d07-43cc-4ccd-8226-524dc1b0eeb2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Transport
+VAR_INPUT
+	bStart:BOOL;
+	bStop:BOOL;
+	bSensor_Vorne_1 :BOOL;
+	bSensor_Mitte_1 :BOOL;
+	bSensor_Hinten_1 :BOOL;
+	bSensor_Vorne_2 :BOOL;
+	bSensor_Mitte_2 :BOOL;
+	bSensor_Hinten_2 :BOOL;
+	
+	
+	
+END_VAR
+VAR_OUTPUT
+	estate: E_State_Transport;
+	estate_Ampel_1_1 : E_STATE_AMPEL;
+	estate_Ampel_1_2 : E_STATE_AMPEL;
+	estate_Ampel_2_1 : E_STATE_AMPEL;
+	estate_Ampel_2_2 : E_STATE_AMPEL;
+	Rollenstopper_L1_1:BOOL;
+	Rollenstopper_L1_2:BOOL;
+	Rollenstopper_L2_1:BOOL;
+	Rollenstopper_L2_2:BOOL;
+	
+END_VAR
+VAR_IN_OUT
+	ipart_counter :INT;
+	bKisteLeer:BOOL;
+END_VAR
+
+VAR
+	FB_L1:Linie;
+	FB_L2:linie;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FB_L1(bSensor_Vorne:=bSensor_Vorne_1,
+	bSensor_Mitte:=bSensor_Mitte_1,
+	bSensor_Hinten:=bSensor_Hinten_1,
+	bRollenStopper_Vorne=>Rollenstopper_L1_1,
+	bRollenStopper_Mitte=>Rollenstopper_L1_2,
+	estate_A1=>estate_Ampel_1_1,
+	estate_A2=>estate_Ampel_1_2);
+	
+FB_L2(bSensor_Vorne:=bSensor_Vorne_2,
+	bSensor_Mitte:=bSensor_Mitte_2,
+	bSensor_Hinten:=bSensor_Hinten_2,
+	bRollenStopper_Vorne=>Rollenstopper_L2_1,
+	bRollenStopper_Mitte=>Rollenstopper_L2_2,
+	estate_A1=>estate_Ampel_2_1,
+	estate_A2=>estate_Ampel_2_2);
+
+
+
+CASE eState OF
+
+    E_State_Transport.IDLE:
+        IF bStart AND NOT bStop THEN
+            eState := E_State_Transport.INIT;
+        END_IF
+
+    E_State_Transport.INIT:
+		FB_L1.bEnable:=TRUE;
+		FB_L2.bEnable:=TRUE;
+        IF bStart THEN
+            eState := E_State_Transport.WORK;
+        END_IF
+
+    E_State_Transport.WORK:
+	
+        IF bKisteLeer THEN
+			FB_L1.bStart:=TRUE;
+			IF FB_L1.estate = E_State_Linie.DONE THEN
+				bKisteLeer:=FALSE;
+				FB_L1.bStart:=FALSE;
+			END_IF
+		END_IF
+		
+        IF ipart_counter >= GVL.iKisten_Kap THEN
+			FB_L2.bStart:=TRUE;
+			IF FB_L2.estate = E_State_Linie.DONE THEN
+				ipart_counter := 0;
+				FB_L2.bStart:=FALSE;
+			END_IF
+        END_IF
+
+END_CASE
+
+IF bStop THEN
+	FB_L1.bStart:=FALSE;
+	FB_L2.bStart:=FALSE;
+	FB_L1.bEnable:=FALSE;
+	FB_L2.bEnable:=FALSE;
+	estate:= E_State_Transport.IDLE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="Transport">
+      <LineId Id="89" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="180" Count="1" />
+      <LineId Id="143" Count="1" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="98" Count="2" />
+      <LineId Id="182" Count="1" />
+      <LineId Id="141" Count="1" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="31" Count="9" />
+      <LineId Id="87" Count="1" />
+      <LineId Id="41" Count="4" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="189" Count="1" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="192" Count="1" />
+      <LineId Id="128" Count="1" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="185" Count="2" />
+      <LineId Id="49" Count="1" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="275" Count="3" />
+      <LineId Id="272" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

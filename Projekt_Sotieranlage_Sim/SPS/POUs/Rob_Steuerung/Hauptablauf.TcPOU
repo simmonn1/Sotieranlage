@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="Hauptablauf" Id="{6cb42024-6981-4796-8b32-b08d63826a43}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Hauptablauf
+VAR_INPUT
+	bStart: BOOL;
+	bStop: BOOL; 
+	Kiste_Zuliefern:BOOL;
+	Kiste_Abtransport:BOOL;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	eState_Robot: E_STATE_ROB;
+	fbBoxEmptyPos : R_TRIG;
+END_VAR
+
+VAR_IN_OUT
+	part_counter :INT;
+	bchest_empty :BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Flankenerkennung
+fbBoxEmptyPos(CLK := GVL.bRobot_Box_Empty);
+
+IF fbBoxEmptyPos.Q THEN
+	bchest_empty:=TRUE;
+END_IF
+
+//Schrittkette
+CASE eState_Robot OF
+	
+	E_State_Rob.IDLE:
+		// Initialisierung
+		GVL.bRobot_Start_BinPicking := FALSE;
+		GVL.bRobot_Start_QualityCheck := FALSE;
+		GVL.bRobot_Place_Good_Part := FALSE;
+		GVL.bRobot_Dispose_Bad_Part := FALSE;
+		GVL.bQuality_Take_Picture := FALSE;
+		
+		// Warten bis System bereit
+		IF bStart THEN
+			eState_Robot := E_State_Rob.INIT;
+		END_IF
+		
+	E_State_Rob.INIT: 
+	GVL.bRobot_Start:= TRUE;		
+	IF GVL.bRobot_Ready THEN
+			eState_Robot := E_State_Rob.WAIT_CRATE;
+	END_IF
+	
+	E_State_Rob.WAIT_CRATE:
+		IF Kiste_Zuliefern THEN  
+			eState_Robot := E_State_Rob.START_BIN_PICKING;
+		END_IF
+	
+	E_State_Rob.START_BIN_PICKING:
+		// Bin-Picking starten
+		GVL.bRobot_Start_BinPicking := TRUE;
+		
+		// Warten auf Roboter-Rückmeldung
+		IF GVL.bRobot_BinPicking_Done THEN
+			GVL.bRobot_Start_BinPicking := FALSE;
+			
+			IF bchest_empty THEN				
+				eState_Robot := E_State_Rob.GET_NEW_CRATE;
+			ELSE
+				eState_Robot := E_State_Rob.MOVE_TO_QUALI;
+			END_IF
+		ELSIF GVL.bRobot_Error THEN
+			// Fehlerbehandlung
+			GVL.bRobot_Start_BinPicking := FALSE;
+			eState_Robot := E_State_Rob.INIT;  // Oder zu Fehler-State
+		END_IF
+	
+	E_State_Rob.MOVE_TO_QUALI:
+		// Roboter zur Qualitätsprüfung bewegen
+		GVL.bRobot_Start_QualityCheck := TRUE;
+		
+		IF GVL.bRobot_At_Quality_Pos THEN
+			GVL.bRobot_Start_QualityCheck := FALSE;
+			eState_Robot := E_State_Rob.START_QUALITY;
+		END_IF
+	
+	E_State_Rob.GET_NEW_CRATE:
+		IF Kiste_Zuliefern AND NOT bchest_empty THEN
+			eState_Robot := E_State_Rob.START_BIN_PICKING;
+		END_IF
+	
+	E_State_Rob.START_QUALITY:
+		// Roboter ist an Qualitätsposition, Foto machen
+		GVL.bQuality_Take_Picture := TRUE;
+		
+		IF GVL.bQuality_Picture_Done THEN
+			GVL.bQuality_Take_Picture := FALSE;
+			eState_Robot := E_State_Rob.QUALI_PICTURE;
+		ELSIF GVL.bQuality_Error THEN
+			// Qualitätsfehler
+			GVL.bQuality_Take_Picture := FALSE;
+			eState_Robot := E_State_Rob.INIT;
+		END_IF
+	
+	E_State_Rob.QUALI_PICTURE:
+		// Qualitätsergebnis auswerten
+		IF GVL.bQuality_Result_Good AND Kiste_Abtransport THEN
+			eState_Robot := E_State_Rob.PLACE_GOOD;
+		ELSIF GVL.bQuality_Result_Good AND NOT Kiste_Abtransport THEN
+			eState_Robot := E_State_Rob.WAIT_CRATE_2;
+		ELSE
+			eState_Robot := E_State_Rob.PLACE_BAD;
+		END_IF
+		
+	E_State_Rob.WAIT_CRATE_2:
+		IF Kiste_Abtransport THEN
+			eState_Robot := E_State_Rob.PLACE_GOOD;
+		END_IF
+	
+	E_State_Rob.PLACE_GOOD:
+		// Gutteil in Abtransportkiste legen
+		GVL.bRobot_Place_Good_Part := TRUE;
+		IF GVL.bRobot_Part_Placed THEN
+			GVL.bRobot_Place_Good_Part := FALSE;
+			eState_Robot := E_State_Rob.DONE;
+			part_counter := part_counter +1;
+		ELSIF GVL.bRobot_Error THEN
+			// Ablegefehler
+			GVL.bRobot_Place_Good_Part := FALSE;
+			eState_Robot := E_State_Rob.INIT;
+		END_IF
+	
+	E_State_Rob.PLACE_BAD:
+		// Schlechtteil entsorgen
+		GVL.bRobot_Dispose_Bad_Part := TRUE;
+		
+		IF GVL.bRobot_Part_Placed THEN
+			GVL.bRobot_Dispose_Bad_Part := FALSE;
+			eState_Robot := E_State_Rob.DONE;
+		ELSIF GVL.bRobot_Error THEN
+			// Entsorgungsfehler
+			GVL.bRobot_Dispose_Bad_Part := FALSE;
+			eState_Robot := E_State_Rob.INIT;
+		END_IF
+	
+	E_State_Rob.DONE:
+		// Zyklus abgeschlossen, prüfen ob weitere Teile
+		IF GVL.bRobot_Ready THEN
+			IF Kiste_Zuliefern THEN  // Noch Kiste da
+				eState_Robot := E_State_Rob.START_BIN_PICKING;
+			ELSE
+				eState_Robot := E_State_Rob.WAIT_CRATE;
+			END_IF
+		END_IF
+
+ELSE
+	// Unbekannter Zustand - Reset
+	eState_Robot := E_State_Rob.INIT;
+	
+END_CASE
+
+// Stop-Button Behandlung
+IF bStop THEN
+	eState_Robot := E_State_Rob.INIT;
+	// Alle Ausgänge zurücksetzen
+	GVL.bRobot_Start:= FALSE;
+	GVL.bRobot_Start_BinPicking := FALSE;
+	GVL.bRobot_Start_QualityCheck := FALSE;
+	GVL.bRobot_Place_Good_Part := FALSE;
+	GVL.bRobot_Dispose_Bad_Part := FALSE;
+	GVL.bQuality_Take_Picture := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="Hauptablauf">
+      <LineId Id="172" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="10" Count="13" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="201" Count="2" />
+      <LineId Id="200" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="27" Count="31" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="165" Count="1" />
+      <LineId Id="69" Count="18" />
+      <LineId Id="156" Count="1" />
+      <LineId Id="88" Count="2" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="158" Count="2" />
+      <LineId Id="91" Count="3" />
+      <LineId Id="96" Count="2" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="99" Count="38" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="138" Count="4" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,13 +1,78 @@
-<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1">
-  <POU Name="MAIN" Id="{f7685923-24f0-4e35-8b3f-73db6db003e3}">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="MAIN" Id="{f7685923-24f0-4e35-8b3f-73db6db003e3}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
+	Transport: Transport;
+	RS_Start_Stop  : RS;
+	bKiste_Leer:BOOL:=FALSE;
+	estate_Transport:E_State_Transport;
+	ipart_counter:INT:=0;
+	estate_Ampel_1_1 : E_STATE_AMPEL;
+	estate_Ampel_1_2 : E_STATE_AMPEL;
+	estate_Ampel_2_1 : E_STATE_AMPEL;
+	estate_Ampel_2_2 : E_STATE_AMPEL;
+	Ampel_1_1: Ampel;
+	Ampel_1_2: Ampel;
+	Ampel_2_1: Ampel;
+	Ampel_2_2: Ampel;
+	Bin_Picking: Hauptablauf;
 END_VAR
-]]>
-    </Declaration>
+]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[
+RS_Start_Stop(SET:=GVL.bStart,RESET1:=GVL.bStop);
+
+Transport( 
+	bStart:= RS_Start_Stop.Q1, 
+	bStop:= NOT(RS_Start_Stop.Q1),
+	bSensor_Vorne_1:= GVL.bB1_1, 
+	bSensor_Mitte_1:= GVL.bB1_2, 
+	bSensor_Hinten_1:= GVL.bB1_3, 
+	bSensor_Vorne_2:= GVL.bB2_1, 
+	bSensor_Mitte_2:= GVL.bB2_2, 
+	bSensor_Hinten_2:= GVL.bB2_3,  
+	bKisteLeer:= bKiste_Leer, 
+	estate=> estate_Transport, 
+	estate_Ampel_1_1=> estate_Ampel_1_1,
+	estate_Ampel_1_2=> estate_Ampel_1_2,
+	estate_Ampel_2_1=> estate_Ampel_2_1,
+	estate_Ampel_2_2=> estate_Ampel_2_2,    
+	Rollenstopper_L1_1=> GVL.bM1_1, 
+	Rollenstopper_L1_2=> GVL.bM1_2, 
+	Rollenstopper_L2_1=> GVL.bM2_1, 
+	Rollenstopper_L2_2=> GVL.bM2_2, 
+	ipart_counter:= ipart_counter);
+	
+Bin_Picking(bStart:=RS_Start_Stop.Q1,bStop:=NOT(RS_Start_Stop.Q1), bchest_empty:=bKiste_Leer,Kiste_Zuliefern:=GVL.bB1_2,Kiste_Abtransport:=GVL.bB2_2,part_counter:=ipart_counter);
+	
+	
+
+Ampel_1_1(e_state_ample:=estate_Ampel_1_1 , red=>GVL.bP1_1R , yellow=>GVL.bP1_1Y , green=>GVL.bP1_1G );
+Ampel_1_2(e_state_ample:=estate_Ampel_1_2 , red=>GVL.bP1_3R , yellow=>GVL.bP1_3Y , green=>GVL.bP1_3G );
+Ampel_2_1(e_state_ample:=estate_Ampel_2_1 , red=>GVL.bP2_1R , yellow=>GVL.bP2_1Y , green=>GVL.bP2_1G );
+Ampel_2_2(e_state_ample:=estate_Ampel_2_2 , red=>GVL.bP2_3R , yellow=>GVL.bP2_3Y , green=>GVL.bP2_3G );]]></ST>
     </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="89" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="10" Count="5" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="41" Count="2" />
+      <LineId Id="20" Count="3" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="48" Count="0" />
+    </LineIds>
   </POU>
 </TcPlcObject>

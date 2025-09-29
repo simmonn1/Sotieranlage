@@ -23,30 +23,59 @@ VAR_GLOBAL
 	//Sotieranlage hat zwei linien 1 Zuliferung der Teile 2 Abtransport
 	bM1_1 :BOOL; //Rollenstopper Vorne
 	bM1_2 :BOOL; //Rollenstopper Mitte
-	bM1_3 :BOOL; //Rollenstopper Hinten
+	
 	
 	bM2_1 :BOOL; //Rollenstopper Vorne
 	bM2_2 :BOOL; //Rollenstopper Mitte
-	bM2_3 :BOOL; //Rollenstopper Hinten
+	
 	
 	//Ampeln
 	//Sotieranlage hat zwei linien 1 Zuliferung der Teile 2 Abtransport
-	P1_1R:BOOL; //Ampel Rot
-	P1_1Y:BOOL; //Ampel Gelb
-	P1_1G:BOOL; //Ampel Gruen
+	bP1_1R:BOOL; //Ampel Rot
+	bP1_1Y:BOOL; //Ampel Gelb
+	bP1_1G:BOOL; //Ampel Gruen
 	
-	P1_3R:BOOL; //Ampel Rot
-	P1_3Y:BOOL; //Ampel Gelb
-	P1_3G:BOOL; //Ampel Gruen
+	bP1_3R:BOOL; //Ampel Rot
+	bP1_3Y:BOOL; //Ampel Gelb
+	bP1_3G:BOOL; //Ampel Gruen
 	
-	P2_1R:BOOL; //Ampel Rot
-	P2_1Y:BOOL; //Ampel Gelb
-	P2_1G:BOOL; //Ampel Gruen
+	bP2_1R:BOOL; //Ampel Rot
+	bP2_1Y:BOOL; //Ampel Gelb
+	bP2_1G:BOOL; //Ampel Gruen
 	
-	P2_3R:BOOL; //Ampel Rot
-	P2_3Y:BOOL; //Ampel Gelb
-	P2_3G:BOOL; //Ampel Gruen	
+	bP2_3R:BOOL; //Ampel Rot
+	bP2_3Y:BOOL; //Ampel Gelb
+	bP2_3G:BOOL; //Ampel Gruen	
 	
+	//Einstellungswerte
+	iKisten_Kap:INT :=6; //Kapazität der Ablage
+	
+	// SPS → Roboter
+	bRobot_Start 			   :BOOL;    //Startet Roboter
+	bRobot_Start_BinPicking    : BOOL;  // Starte Bildaufnahme + Greifen
+	bRobot_Start_QualityCheck  : BOOL;  // Bewege Teil zur Quali-Kamera
+	bRobot_Place_Good_Part     : BOOL;  // Lege Gutteil in Kiste Strecke 2
+	bRobot_Dispose_Bad_Part    : BOOL;  // Entsorge Schlechtteil
+	
+	// Roboter → SPS  
+	bRobot_Ready              : BOOL;  // Bereit für neuen Auftrag
+	bRobot_BinPicking_Done    : BOOL;  // Greifen abgeschlossen
+	bRobot_At_Quality_Pos     : BOOL;  // Teil bei Quali-Kamera positioniert
+	bRobot_Part_Placed        : BOOL;  // Teil abgelegt/entsorgt
+	bRobot_Box_Empty          : BOOL;  // Kiste ist leer (von Kamera erkannt)
+	bRobot_Error              : BOOL;  // Fehler aufgetreten
+	wRobot_Error_Code         : WORD;  // Fehlercode ?
+	
+	
+	// SPS → Kamera
+	bQuality_Take_Picture     : BOOL;  // Mache Foto
+	
+	// Kamera → SPS
+	bQuality_Ready            : BOOL;  // Bereit für Foto
+	bQuality_Picture_Done     : BOOL;  // Foto aufgenommen
+	bQuality_Result_Good      : BOOL;  // Teil ist OK
+	bQuality_Error            : BOOL;  // Kamera-Fehler
+	wQuality_Error_Code       : WORD;  // Fehlercode ?
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>

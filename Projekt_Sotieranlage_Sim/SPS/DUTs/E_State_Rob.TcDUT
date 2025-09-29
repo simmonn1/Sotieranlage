@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <DUT Name="E_State_Rob" Id="{495230f8-2ad4-40c9-b619-a27c609fdcd6}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_State_Rob :
+(
+	IDLE,
+	INIT,
+	WAIT_CRATE,
+	START_BIN_PICKING,
+	START_QUALITY,
+	GET_NEW_CRATE,
+	MOVE_TO_QUALI,
+	QUALI_PICTURE,
+	WAIT_CRATE_2,
+	PLACE_GOOD,
+	PLACE_BAD,
+	DONE
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
